@@ -7,7 +7,7 @@ During CAT cases, handle these 4 types of claim submissions accordingly:
 1. New Claim File Assignments
 - Set Outlook rule to migrate relevant emails to correct folder
 - Open Outlook VBA editor: `ALT` + `F11`
-- Run NewClaimFiles VBA module on Outlook VBA editor
+- Run [NewClaimFiles VBA module](NewClaimFiles.bas) on Outlook VBA editor
   - Module currently generates Excel spreadsheet. Refactoring is in progress to link to Sharepoint.
 
 2. ECS Calls
