@@ -1,0 +1,172 @@
+Attribute VB_Name = "NewClaimFiles"
+Sub ExtractEmailTableDataToDesktop()
+    Dim outlookNamespace As Object
+    Dim inboxFolder As Object
+    Dim targetFolder As Object
+    Dim mailItem As Object
+    Dim oMail As Object
+    
+    Dim htmlDoc As Object
+    Dim htmlCells As Object
+    Dim htmlCell As Object
+    
+    Dim xlApp As Object
+    Dim xlWB As Object
+    Dim xlWS As Object
+    Dim rowCount As Long
+    
+    Dim claimNumber As String
+    Dim insuredName As String
+    Dim targetFolderName As String
+
+    Dim desktopPath As String
+    
+    Dim getNextAsClaim As Boolean
+    Dim getNextAsInsured As Boolean
+    Dim cleanText As String
+    
+    ' =========================================================================
+    ' CONFIGURATION AREA: Enter your exact folder name here
+    targetFolderName = "New Claims CAT"
+    ' =========================================================================
+    
+    ' Initialize Excel using Late Binding
+    On Error Resume Next
+    Set xlApp = CreateObject("Excel.Application")
+    On Error GoTo 0
+    
+    If xlApp Is Nothing Then
+        MsgBox "Excel could not be started. Please ensure Excel is installed.", vbCritical
+        Exit Sub
+
+    End If
+    
+    ' Hide Excel during execution for better performance
+    xlApp.Visible = False
+    Set xlWB = xlApp.Workbooks.Add
+    Set xlWS = xlWB.Sheets(1)
+    
+    ' Set up spreadsheet columns
+    xlWS.cells(1, 1).Value = "Email Subject"
+    xlWS.cells(1, 2).Value = "Date Received"
+    xlWS.cells(1, 3).Value = "Claim Number"
+    xlWS.cells(1, 4).Value = "Insured"
+    
+    ' Start writing data on row 2
+    rowCount = 2
+    
+    ' Connect to the default Outlook MAPI namespace
+    Set outlookNamespace = Application.GetNamespace("MAPI")
+    Set inboxFolder = outlookNamespace.GetDefaultFolder(6) ' 6 represents the Inbox folder
+
+    
+    ' Step 1: Scan for target subfolder nested inside the Inbox
+    On Error Resume Next
+    Set targetFolder = inboxFolder.Folders(targetFolderName)
+    On Error GoTo 0
+    
+    ' Step 2: Fallback check at the top-level mailbox hierarchy
+    If targetFolder Is Nothing Then
+        On Error Resume Next
+        Set targetFolder = inboxFolder.Parent.Folders(targetFolderName)
+        On Error GoTo 0
+    End If
+    
+    ' Safe exit if folder cannot be found
+    If targetFolder Is Nothing Then
+        xlWB.Close SaveChanges:=False
+        xlApp.Quit
+        Set xlWS = Nothing
+        Set xlWB = Nothing
+
+        Set xlApp = Nothing
+        MsgBox "The folder '" & targetFolderName & "' could not be found.", vbCritical
+        Exit Sub
+    End If
+    
+    ' Loop through every item inside the target folder
+    For Each mailItem In targetFolder.Items
+        ' Ensure the item is a standard email message
+        If TypeName(mailItem) = "MailItem" Then
+            Set oMail = mailItem
+            
+            ' Only process emails formatted in HTML since they contain tables
+            If oMail.BodyFormat = 2 Then ' 2 represents olFormatHTML
+                
+                ' Reset value variables for the current email
+                claimNumber = ""
+                insuredName = ""
+                getNextAsClaim = False
+                getNextAsInsured = False
+
+                
+                ' Initialize an HTML document parser object
+                Set htmlDoc = CreateObject("htmlfile")
+                htmlDoc.Body.innerHTML = oMail.HTMLBody
+                
+                ' Fetch all table cells (<td> tags) inside the email body
+                Set htmlCells = htmlDoc.getElementsByTagName("td")
+                
+                ' Parse cells sequentially to look for keys
+                For Each htmlCell In htmlCells
+                    ' If previous cell was a target header, grab this cell's text value
+                    If getNextAsClaim Then
+                        claimNumber = Trim(htmlCell.innerText)
+                        getNextAsClaim = False
+                    ElseIf getNextAsInsured Then
+                        insuredName = Trim(htmlCell.innerText)
+                        getNextAsInsured = False
+                    End If
+                    
+
+                    ' Clean and normalize the cell text for strict matching rules
+                    cleanText = Trim(htmlCell.innerText)
+                    cleanText = Replace(cleanText, ":", "")
+                    cleanText = Replace(cleanText, Chr(10), "")
+                    cleanText = Replace(cleanText, Chr(13), "")
+                    cleanText = LCase(Trim(cleanText))
+                    
+                    ' Verify exact matching parameters
+                    If cleanText = "claim number" Then
+                        getNextAsClaim = True
+                    ElseIf cleanText = "insured" Or cleanText = "insured name" Then
+                        getNextAsInsured = True
+                    End If
+                Next htmlCell
+                
+                ' Log results to Excel if at least one target match was found
+                If claimNumber <> "" Or insuredName <> "" Then
+                    xlWS.cells(rowCount, 1).Value = oMail.Subject
+                    xlWS.cells(rowCount, 2).Value = oMail.ReceivedTime
+
+                    xlWS.cells(rowCount, 3).Value = claimNumber
+                    xlWS.cells(rowCount, 4).Value = insuredName
+                    rowCount = rowCount + 1
+                End If
+                
+                ' Clean up HTML document before moving to next item
+                Set htmlDoc = Nothing
+            End If
+        End If
+    Next mailItem
+    
+    ' Adjust cell width automatically to fit information nicely
+    xlWS.Columns("A:D").AutoFit
+    
+    ' Save the finalized spreadsheet to the user's Desktop
+    desktopPath = CreateObject("WScript.Shell").SpecialFolders("Desktop")
+    xlWB.SaveAs desktopPath & "\Outlook_Extracted_Data.xlsx"
+    xlWB.Close SaveChanges:=True
+    xlApp.Quit
+
+    
+    ' Unload objects from memory
+    Set xlWS = Nothing
+    Set xlWB = Nothing
+    Set xlApp = Nothing
+    Set targetFolder = Nothing
+    Set inboxFolder = Nothing
+    Set outlookNamespace = Nothing
+    
+    MsgBox "Data extraction complete! 'Outlook_Extracted_Data.xlsx' has been saved to your Desktop.", vbInformation
+End Sub
