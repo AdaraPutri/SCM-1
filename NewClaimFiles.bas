@@ -27,7 +27,7 @@ Sub ExtractEmailTableDataToDesktop()
     
     ' =========================================================================
     ' CONFIGURATION AREA: Enter your exact folder name here
-    targetFolderName = "New Claims CAT"
+    targetFolderName = "New Claims"
     ' =========================================================================
     
     ' Initialize Excel using Late Binding
@@ -43,7 +43,7 @@ Sub ExtractEmailTableDataToDesktop()
     
     ' Hide Excel during execution for better performance
     xlApp.Visible = False
-    filePath = CreateObject("WScript.Shell").SpecialFolders("Desktop") & "\Outlook_Extracted_Data.xlsx"
+    filePath = CreateObject("WScript.Shell").SpecialFolders("Desktop") & "\New_Claims_List.xlsx"
 
     If Dir(filePath) <> "" Then
         Set xlWB = xlApp.Workbooks.Open(filePath)
@@ -178,13 +178,11 @@ Sub ExtractEmailTableDataToDesktop()
     ' Adjust cell width automatically to fit information nicely
     xlWS.Columns("A:D").AutoFit
     
-    ' Save the finalized spreadsheet to the user's Desktop
-    desktopPath = CreateObject("WScript.Shell").SpecialFolders("Desktop")
-    xlWB.SaveAs desktopPath & "\Outlook_Extracted_Data.xlsx"
+    ' Save back to the same file it was opened from (or just created)
+    xlWB.Save
     xlWB.Close SaveChanges:=True
     xlApp.Quit
 
-    
     ' Unload objects from memory
     Set xlWS = Nothing
     Set xlWB = Nothing
@@ -193,7 +191,7 @@ Sub ExtractEmailTableDataToDesktop()
     Set inboxFolder = Nothing
     Set outlookNamespace = Nothing
     
-    MsgBox "Data extraction complete! 'Outlook_Extracted_Data.xlsx' has been saved to your Desktop.", vbInformation
+    MsgBox "Data extraction complete! 'New_Claims_List.xlsx' has been saved to your Desktop.", vbInformation
 End Sub
 
 Sub ResetClaimsSheet()
@@ -204,7 +202,7 @@ Sub ResetClaimsSheet()
     Dim lastRow As Long
     Dim confirmReset As Integer
 
-    filePath = CreateObject("WScript.Shell").SpecialFolders("Desktop") & "\Outlook_Extracted_Data.xlsx"
+    filePath = CreateObject("WScript.Shell").SpecialFolders("Desktop") & "\New_Claims_List.xlsx"
 
     If Dir(filePath) = "" Then
         MsgBox "No tracking spreadsheet exists yet on the Desktop, so there's nothing to reset.", vbInformation
