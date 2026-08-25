@@ -43,17 +43,24 @@ Sub ExtractEmailTableDataToDesktop()
     
     ' Hide Excel during execution for better performance
     xlApp.Visible = False
-    Set xlWB = xlApp.Workbooks.Add
-    Set xlWS = xlWB.Sheets(1)
+    filePath = CreateObject("WScript.Shell").SpecialFolders("Desktop") & "\Outlook_Extracted_Data.xlsx"
+
+    If Dir(filePath) <> "" Then
+        Set xlWB = xlApp.Workbooks.Open(filePath)
+        Set xlWS = xlWB.Sheets(1)
+    Else
+        Set xlWB = xlApp.Workbooks.Add
+        Set xlWS = xlWB.Sheets(1)
+        xlWS.cells(1, 1).Value = "Claim Number"
+        xlWS.cells(1, 2).Value = "Date Received"
+        xlWS.cells(1, 3).Value = "Insured"
+        xlWS.cells(1, 4).Value = "Adjuster"
+        xlWB.SaveAs filePath
+    End If
     
-    ' Set up spreadsheet columns
-    xlWS.cells(1, 1).Value = "Email Subject"
-    xlWS.cells(1, 2).Value = "Date Received"
-    xlWS.cells(1, 3).Value = "Claim Number"
-    xlWS.cells(1, 4).Value = "Insured"
-    
-    ' Start writing data on row 2
-    rowCount = 2
+    lastRow = xlWS.cells(xlWS.Rows.Count, 1).End(-4162).Row ' -4162 = xlUp
+    If lastRow < 1 Then lastRow = 1
+    rowCount = lastRow + 1
     
     ' Connect to the default Outlook MAPI namespace
     Set outlookNamespace = Application.GetNamespace("MAPI")
@@ -134,21 +141,39 @@ Sub ExtractEmailTableDataToDesktop()
                     End If
                 Next htmlCell
                 
-                ' Log results to Excel if at least one target match was found
-                If claimNumber <> "" Or insuredName <> "" Then
-                    xlWS.cells(rowCount, 1).Value = oMail.Subject
-                    xlWS.cells(rowCount, 2).Value = oMail.ReceivedTime
-
-                    xlWS.cells(rowCount, 3).Value = claimNumber
-                    xlWS.cells(rowCount, 4).Value = insuredName
-                    rowCount = rowCount + 1
+                ' Extracts adjuster initials
+                adjusterMarker = "Adjuster "
+                markerPos = InStr(1, oMail.Body, adjusterMarker, vbTextCompare)
+                If markerPos > 0 Then
+                    markerPos = markerPos + Len(adjusterMarker)
+                    commaPos = InStr(markerPos, oMail.Body, ",")
+                    If commaPos > 0 Then
+                        adjusterInitials = Trim(Mid(oMail.Body, markerPos, commaPos - markerPos))
+                    End If
                 End If
                 
-                ' Clean up HTML document before moving to next item
+                
+                ' Log results to Excel and check for duplicates
+                If claimNumber <> "" Then
+                    isDuplicate = False
+                    Set duplicateCheck = Nothing
+                    Set duplicateCheck = xlWS.Columns(1).Find(What:=claimNumber, LookAt:=1)
+                    If Not duplicateCheck Is Nothing Then isDuplicate = True
+
+                    If Not isDuplicate Then
+                        xlWS.cells(rowCount, 1).Value = claimNumber
+                        xlWS.cells(rowCount, 2).Value = oMail.ReceivedTime
+                        xlWS.cells(rowCount, 3).Value = insuredName
+                        xlWS.cells(rowCount, 4).Value = adjusterInitials
+                        rowCount = rowCount + 1
+                    End If
+                End If
+
                 Set htmlDoc = Nothing
             End If
         End If
     Next mailItem
+                
     
     ' Adjust cell width automatically to fit information nicely
     xlWS.Columns("A:D").AutoFit
