@@ -195,3 +195,52 @@ Sub ExtractEmailTableDataToDesktop()
     
     MsgBox "Data extraction complete! 'Outlook_Extracted_Data.xlsx' has been saved to your Desktop.", vbInformation
 End Sub
+
+Sub ResetClaimsSheet()
+    Dim xlApp As Object
+    Dim xlWB As Object
+    Dim xlWS As Object
+    Dim filePath As String
+    Dim lastRow As Long
+    Dim confirmReset As Integer
+
+    filePath = CreateObject("WScript.Shell").SpecialFolders("Desktop") & "\Outlook_Extracted_Data.xlsx"
+
+    If Dir(filePath) = "" Then
+        MsgBox "No tracking spreadsheet exists yet on the Desktop, so there's nothing to reset.", vbInformation
+        Exit Sub
+    End If
+
+    confirmReset = MsgBox("This will permanently delete every claim row currently in the tracking sheet " & _
+                           "(including any highlight colors you've applied). This cannot be undone." & vbCrLf & vbCrLf & _
+                           "Continue?", vbYesNo + vbExclamation, "Confirm Reset")
+    If confirmReset <> vbYes Then Exit Sub
+
+    On Error Resume Next
+    Set xlApp = CreateObject("Excel.Application")
+    On Error GoTo 0
+    If xlApp Is Nothing Then
+        MsgBox "Excel could not be started. Please ensure Excel is installed.", vbCritical
+        Exit Sub
+    End If
+
+    xlApp.Visible = False
+    Set xlWB = xlApp.Workbooks.Open(filePath)
+    Set xlWS = xlWB.Sheets(1)
+
+    lastRow = xlWS.cells(xlWS.Rows.Count, 1).End(-4162).Row
+
+    If lastRow > 1 Then
+        xlWS.Rows("2:" & lastRow).Delete
+    End If
+
+    xlWB.Save
+    xlWB.Close SaveChanges:=True
+    xlApp.Quit
+
+    Set xlWS = Nothing
+    Set xlWB = Nothing
+    Set xlApp = Nothing
+
+    MsgBox "The tracking sheet has been reset - only the header row remains. Run the extraction macro to repopulate it.", vbInformation
+End Sub
