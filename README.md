@@ -6,10 +6,8 @@ Keeping track of programmed automations I use at work.
 During CAT cases, handle these 4 types of claim submissions accordingly:
 
 **1. New Claim File Assignments**
-- Set Outlook rule to migrate relevant emails to correct folder
-- Open Outlook VBA editor: `ALT` + `F11`
-- Run [NewClaimFiles VBA module](NewClaimFiles.bas) on Outlook VBA editor
-  - Module currently generates Excel spreadsheet. Refactoring is in progress to link to Sharepoint and remove duplicates.
+- See [New Claim File Assignments — Setup Guide](NewClaims-README.md) for full instructions
+- Module generates a local Excel spreadsheet, appending new claims and skipping duplicates on each run
 
 **2. ECS Calls**
 - Set Outlook rule to migrate relevant emails to correct folder
