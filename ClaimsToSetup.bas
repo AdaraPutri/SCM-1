@@ -1,4 +1,3 @@
-Attribute VB_Name = "ClaimsToSetup"
 Sub ExtractUniqueSubjectsToDesktop()
     Dim outlookNamespace As Object
     Dim inboxFolder As Object
@@ -10,36 +9,52 @@ Sub ExtractUniqueSubjectsToDesktop()
     Dim xlWB As Object
     Dim xlWS As Object
     Dim rowCount As Long
+    Dim lastRow As Long
+    Dim filePath As String
     
     Dim targetFolderName As String
-    Dim desktopPath As String
     Dim currentSubject As String
     Dim tempSubject As String
     Dim initialLength As Long
     
     Dim duplicateCheck As Object
-
     Dim isDuplicate As Boolean
-    
-    Dim debugMsg As String
-    
-    ' Diagnostic Counters
-    Dim totalEmailsScanned As Long
-    Dim newRowsAdded As Long
-    Dim duplicatesFound As Long
-    Dim nonMailItemsFound As Long
     
     ' =========================================================================
     ' CONFIGURATION AREA: Enter your exact folder name here
-    targetFolderName = "Claims to Setup CAT"
+    targetFolderName = "Claims to Set Up"
     ' =========================================================================
     
-    ' Initialize counters
-    totalEmailsScanned = 0
-    newRowsAdded = 0
-    duplicatesFound = 0
-
-    nonMailItemsFound = 0
+    ' Initialize Excel using Late Binding
+    On Error Resume Next
+    Set xlApp = CreateObject("Excel.Application")
+    On Error GoTo 0
+    
+    If xlApp Is Nothing Then
+        MsgBox "Excel could not be started. Please ensure Excel is installed.", vbCritical
+        Exit Sub
+    End If
+    
+    ' Hide Excel during execution for better performance
+    xlApp.Visible = False
+    
+    filePath = CreateObject("WScript.Shell").SpecialFolders("Desktop") & "\Claims_To_Setup_Data.xlsx"
+    
+    If Dir(filePath) <> "" Then
+        Set xlWB = xlApp.Workbooks.Open(filePath)
+        Set xlWS = xlWB.Sheets(1)
+    Else
+        Set xlWB = xlApp.Workbooks.Add
+        Set xlWS = xlWB.Sheets(1)
+        xlWS.cells(1, 1).Value = "Email Subject"
+        xlWS.cells(1, 2).Value = "Date Received"
+        xlWS.cells(1, 3).Value = "File Number"
+        xlWB.SaveAs filePath
+    End If
+    
+    lastRow = xlWS.cells(xlWS.Rows.Count, 1).End(-4162).Row ' -4162 = xlUp
+    If lastRow < 1 Then lastRow = 1
+    rowCount = lastRow + 1
     
     ' Connect to the default Outlook MAPI namespace
     Set outlookNamespace = Application.GetNamespace("MAPI")
@@ -57,53 +72,22 @@ Sub ExtractUniqueSubjectsToDesktop()
         On Error GoTo 0
     End If
     
-    ' Debug Alert 1: If the folder cannot be found at all
-
+    ' Safe exit if folder cannot be found
     If targetFolder Is Nothing Then
-        debugMsg = "DEBUG ALERT: The folder '" & targetFolderName & "' could not be found anywhere in your Outlook hierarchy. "
-        debugMsg = debugMsg & "Please verify the case-sensitive spelling or check if it is nested inside another folder."
-        MsgBox debugMsg, vbCritical, "Folder Not Found"
+        xlWB.Close SaveChanges:=False
+        xlApp.Quit
+        Set xlWS = Nothing
+        Set xlWB = Nothing
+        Set xlApp = Nothing
+        MsgBox "The folder '" & targetFolderName & "' could not be found.", vbCritical
         Exit Sub
     End If
-    
-    ' Debug Alert 2: If the folder is found but is completely empty
-    If targetFolder.Items.Count = 0 Then
-        debugMsg = "DEBUG ALERT: The folder '" & targetFolderName & "' was found, but Outlook says there are 0 items inside it. "
-        debugMsg = debugMsg & "Please check if the emails are actually sitting inside this folder."
-        MsgBox debugMsg, vbExclamation, "Folder Is Empty"
-        Exit Sub
-    End If
-    
-    ' Initialize Excel using Late Binding
-    On Error Resume Next
-    Set xlApp = CreateObject("Excel.Application")
-    On Error GoTo 0
-
-    
-    If xlApp Is Nothing Then
-        MsgBox "Excel could not be started. Please ensure Excel is installed.", vbCritical
-        Exit Sub
-    End If
-    
-    ' Force Excel to be VISIBLE so you can see it working in real-time
-    xlApp.Visible = True
-    Set xlWB = xlApp.Workbooks.Add
-    Set xlWS = xlWB.Sheets(1)
-    
-    ' Set up spreadsheet columns
-    xlWS.cells(1, 1).Value = "Email Subject"
-    xlWS.cells(1, 2).Value = "Date Received"
-    
-    ' Start writing data on row 2
-    rowCount = 2
     
     ' Loop through every item inside the target folder
-
     For Each mailItem In targetFolder.Items
         ' Ensure the item is a standard email message
         If TypeName(mailItem) = "MailItem" Then
             Set oMail = mailItem
-            totalEmailsScanned = totalEmailsScanned + 1
             
             ' Grab and clean the subject line text
             currentSubject = Trim(oMail.Subject)
@@ -118,48 +102,33 @@ Sub ExtractUniqueSubjectsToDesktop()
                 ElseIf Left(tempSubject, 3) = "fw:" Then
                     currentSubject = Trim(Mid(currentSubject, 4))
                 ElseIf Left(tempSubject, 4) = "fwd:" Then
-
                     currentSubject = Trim(Mid(currentSubject, 5))
                 End If
             Loop While Len(currentSubject) < initialLength And Len(currentSubject) > 0
             
+            ' Check for duplicates against everything already in the sheet (past runs included)
             isDuplicate = False
-            
-            ' Check for duplicates only if we have already logged entries
-            If rowCount > 2 Then
-                Set duplicateCheck = Nothing
-                
-                ' Scan Column A (Email Subject) for a precise exact match
-                Set duplicateCheck = xlWS.Columns(1).Find(What:=currentSubject, LookAt:=1)
-                
-                If Not duplicateCheck Is Nothing Then
-                    isDuplicate = True
-                End If
+            Set duplicateCheck = Nothing
+            Set duplicateCheck = xlWS.Columns(1).Find(What:=currentSubject, LookAt:=1)
+            If Not duplicateCheck Is Nothing Then
+                isDuplicate = True
             End If
             
-            ' If it's a completely unique subject, add it to our list
-
+            ' If it's a completely unique subject, append it
             If Not isDuplicate Then
                 xlWS.cells(rowCount, 1).Value = currentSubject
                 xlWS.cells(rowCount, 2).Value = oMail.ReceivedTime
+                ' Column 3 (File Number) left blank for manual entry
                 rowCount = rowCount + 1
-                newRowsAdded = newRowsAdded + 1
-            Else
-                duplicatesFound = duplicatesFound + 1
             End If
-        Else
-            ' Track if items are calendar invites, read receipts, or delivery reports instead of raw emails
-            nonMailItemsFound = nonMailItemsFound + 1
         End If
     Next mailItem
     
     ' Adjust cell width automatically to fit information nicely
-    xlWS.Columns("A:B").AutoFit
+    xlWS.Columns("A:C").AutoFit
     
-    ' Save the finalized spreadsheet to the user's Desktop with the updated filename
-    desktopPath = CreateObject("WScript.Shell").SpecialFolders("Desktop")
-
-    xlWB.SaveAs desktopPath & "\Claims_To_Setup_Data.xlsx"
+    ' Save back to the same file it was opened from (or just created)
+    xlWB.Save
     xlWB.Close SaveChanges:=True
     xlApp.Quit
     
@@ -171,15 +140,55 @@ Sub ExtractUniqueSubjectsToDesktop()
     Set inboxFolder = Nothing
     Set outlookNamespace = Nothing
     
-    ' Display the final summary report box
-    debugMsg = "Data extraction complete!" & vbCrLf & vbCrLf
-    debugMsg = debugMsg & "• Total raw items in folder: " & (totalEmailsScanned + nonMailItemsFound) & vbCrLf
-    debugMsg = debugMsg & "• Valid emails processed: " & totalEmailsScanned & vbCrLf
-    debugMsg = debugMsg & "• Unique subjects saved: " & newRowsAdded & vbCrLf
-    debugMsg = debugMsg & "• Duplicates discarded: " & duplicatesFound & vbCrLf
-    debugMsg = debugMsg & "• Non-email items skipped: " & nonMailItemsFound & vbCrLf & vbCrLf
+    MsgBox "Data extraction complete! 'Claims_To_Setup_Data.xlsx' has been saved to your Desktop.", vbInformation
+End Sub
 
-    debugMsg = debugMsg & "Saved to your Desktop as 'Claims_To_Setup_Data.xlsx'"
+Sub ResetClaimsToSetupSheet()
+    Dim xlApp As Object
+    Dim xlWB As Object
+    Dim xlWS As Object
+    Dim filePath As String
+    Dim lastRow As Long
+    Dim confirmReset As Integer
     
-    MsgBox debugMsg, vbInformation, "Execution Summary"
+    filePath = CreateObject("WScript.Shell").SpecialFolders("Desktop") & "\Claims_To_Setup_Data.xlsx"
+    
+    If Dir(filePath) = "" Then
+        MsgBox "No tracking spreadsheet exists yet on the Desktop, so there's nothing to reset.", vbInformation
+        Exit Sub
+    End If
+    
+    confirmReset = MsgBox("This will permanently delete every claim row currently in the tracking sheet " & _
+                           "(including any highlight colors you've applied). This cannot be undone." & vbCrLf & vbCrLf & _
+                           "Continue?", vbYesNo + vbExclamation, "Confirm Reset")
+    If confirmReset <> vbYes Then Exit Sub
+    
+    On Error Resume Next
+    Set xlApp = CreateObject("Excel.Application")
+    On Error GoTo 0
+    
+    If xlApp Is Nothing Then
+        MsgBox "Excel could not be started. Please ensure Excel is installed.", vbCritical
+        Exit Sub
+    End If
+    
+    xlApp.Visible = False
+    Set xlWB = xlApp.Workbooks.Open(filePath)
+    Set xlWS = xlWB.Sheets(1)
+    
+    lastRow = xlWS.cells(xlWS.Rows.Count, 1).End(-4162).Row
+    
+    If lastRow > 1 Then
+        xlWS.Rows("2:" & lastRow).Delete
+    End If
+    
+    xlWB.Save
+    xlWB.Close SaveChanges:=True
+    xlApp.Quit
+    
+    Set xlWS = Nothing
+    Set xlWB = Nothing
+    Set xlApp = Nothing
+    
+    MsgBox "The tracking sheet has been reset - only the header row remains. Run the extraction macro to repopulate it.", vbInformation
 End Sub
