@@ -89,8 +89,10 @@ Everything else (manual folder move, VBA import, Quick Access Toolbar, weekly cl
 
 Below is how the generated spreadsheet looks like, note that the highlight colors and file number are to be added manually:
 - New Claims List
+
 ![Sample Spreadsheet 1](Screenshots/SpreadsheetSample_NewClaims.png)
 - Claims to Set Up List
+
 ![Sample Spreadsheet 2](Screenshots/SpreadsheetSample_ClaimsToSetup.png)
 
 
