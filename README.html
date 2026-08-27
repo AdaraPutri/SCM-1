@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>README.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> or <div class="page"></div> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="new-claims-list--claims-to-set-up-vba-guide">New Claims List &amp; Claims To Set Up VBA Guide</h1>
+<p>Two Outlook VBA trackers that turn claim-related emails into living Excel to-do lists.</p>
+<ul>
+<li><strong>New Claims</strong>: extracts Claim Number, Date Received, Insured, and Adjuster from &quot;New Task To Assign&quot; emails. Appends new rows and skips duplicates by Claim Number.</li>
+<li><strong>Claims to Setup</strong>: extracts unique email subjects (RE:/FW:/FWD: stripped) and Date Received. Appends new rows and skips duplicates by subject.</li>
+</ul>
+<h2 id="1-move-relevant-emails-into-a-dedicated-folder">1. Move relevant emails into a dedicated folder</h2>
+<p>Do this <strong>manually</strong> rather than with an Outlook rule as it matches the phrase anywhere in the subject, not just at the start, so they'll also catch unrelated emails that happen to contain the same words.</p>
+<ul>
+<li>Create a subfolder under your Inbox (e.g. <code>New Claims</code>).</li>
+</ul>
+<p><img src="Screenshots/1.png" alt="Outlook folder pane showing the New Claims subfolder under Inbox"></p>
+<ul>
+<li>As &quot;New Task To Assign&quot; emails come in, drag them into that folder.</li>
+</ul>
+<p><img src="Screenshots/2.png" alt="Dragging an email into the New Claims folder"></p>
+<h2 id="2-load-the-vba-script">2. Load the VBA script</h2>
+<ul>
+<li>In Outlook, press <code>Alt</code> + <code>F11</code> to open the VBA editor.</li>
+<li>Press <code>Enable Macros</code> if a pop up message appears.</li>
+<li>In the Project Explorer (left pane), right-click your project → <strong>Import File...</strong> → select <a href="NewClaimFiles.bas"><code>NewClaimFiles.bas</code></a> that is downloaded to your device.</li>
+</ul>
+<p><img src="Screenshots/4.png" alt="VBA editor Project Explorer with the Import File menu open"></p>
+<h2 id="3-match-the-script-to-your-setup">3. Match the script to your setup</h2>
+<p>Open the <code>NewClaimFiles</code> module and update two lines near the top of <code>ExtractEmailTableDataToDesktop</code> and near the bottom <code>ResetClaimsSheet</code> as you'd like or leave it be:</p>
+<pre class="hljs"><code><div>targetFolderName = <span class="hljs-string">&quot;New Claims&quot;</span>        <span class="hljs-comment">&#x27; must exactly match the folder name from Step 1</span>
+</div></code></pre>
+<pre class="hljs"><code><div>filePath = ... &amp; <span class="hljs-string">&quot;\New_Claims_List.xlsx&quot;</span>   <span class="hljs-comment">&#x27; change the filename here if you want something different</span>
+</div></code></pre>
+<p><img src="Screenshots/5.png" alt="The targetFolderName and filePath lines in the code, with what to edit circled">
+<img src="Screenshots/6.png" alt="The targetFolderName and filePath lines in the code, with what to edit circled">
+<img src="Screenshots/7.png" alt="The targetFolderName and filePath lines in the code, with what to edit circled"></p>
+<ul>
+<li>Type <code>CTRL</code> + <code>s</code> to save any changes made</li>
+</ul>
+<h2 id="4-add-buttons-to-the-ribbon">4. Add buttons to the ribbon</h2>
+<ul>
+<li>Go back to Outlook</li>
+<li><strong>File → Options → Quick Access Toolbar</strong></li>
+</ul>
+<p><img src="Screenshots/8.png" alt="Navigating to Quick Access Toolbar">
+<img src="Screenshots/9.png" alt="Navigating to Quick Access Toolbar">
+<img src="Screenshots/10.png" alt="Navigating to Quick Access Toolbar"></p>
+<ul>
+<li>Set &quot;Choose commands from&quot; to <strong>Macros</strong></li>
+</ul>
+<p><img src="Screenshots/11.png" alt="Quick Access Toolbar setup screen with the Macros dropdown selected"></p>
+<ul>
+<li>Add <code>Project1.ExtractEmailTableDataToDesktop</code> → click <strong>Modify</strong> → rename to <strong>Update New Claims List</strong> (pick a distinct icon)</li>
+<li>Add <code>Project1.ResetClaimsSheet</code> → <strong>Modify</strong> → rename to <strong>Reset Claims Sheet</strong> (pick a distinct icon)</li>
+</ul>
+<p><img src="Screenshots/12.png" alt="Quick Access Toolbar showing both buttons"></p>
+<ul>
+<li>Press OK</li>
+<li>The buttons should show up on the top of your screen:</li>
+</ul>
+<p><img src="Screenshots/13.png" alt="Ribbon with new buttons"></p>
+<h2 id="5-repeat-the-procedure-with-claimstosetupbas">5. Repeat the procedure with <code>ClaimsToSetup.bas</code></h2>
+<p>Repeat steps 1–4 with these differences:</p>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>New Claims</th>
+<th>Claims to Setup</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Folder name</td>
+<td><code>New Claims</code></td>
+<td><code>Claims to Set Up</code></td>
+</tr>
+<tr>
+<td><code>.bas</code> file</td>
+<td><code>NewClaimFiles.bas</code></td>
+<td><code>ClaimsToSetup.bas</code></td>
+</tr>
+<tr>
+<td>Excel file</td>
+<td><code>New_Claims_List.xlsx</code></td>
+<td><code>Claims_To_Setup_Data.xlsx</code></td>
+</tr>
+<tr>
+<td>Update macro</td>
+<td><code>ExtractEmailTableDataToDesktop</code></td>
+<td><code>ExtractUniqueSubjectsToDesktop</code></td>
+</tr>
+<tr>
+<td>Reset macro</td>
+<td><code>ResetClaimsSheet</code></td>
+<td><code>ResetClaimsToSetupSheet</code></td>
+</tr>
+<tr>
+<td>Button names</td>
+<td>Update New Claims List / Reset Claims Sheet</td>
+<td>Update Claims to Set Up List / Reset Claims to Set Up List</td>
+</tr>
+</tbody>
+</table>
+<p>Everything else (manual folder move, VBA import, Quick Access Toolbar, weekly cleanup order, known errors) is identical.</p>
+<h2 id="6-suggested-use-workflow">6. Suggested Use/ Workflow</h2>
+<ol>
+<li>At the end of each week, archive/ move the emails out of the <code>New Claims</code> and <code>Claims to Set Up</code> folder and click <strong>Reset Claims Sheet</strong> and <strong>Reset Claims To Set Up Sheet</strong>.</li>
+<li>Click <strong>Update New Claims List</strong> and/ or <strong>Update Claims To Set Up List</strong> whenever a new email has been added to respective folders.</li>
+</ol>
+<p><strong>NOTE</strong>: Always exit out of the spreadsheet before updating or resetting the list.</p>
+<p>Below is how the generated spreadsheet looks like, note that the highlight colors and file number are to be added manually:</p>
+<ul>
+<li>New Claims List
+<img src="Screenshots/SpreadsheetSample_NewClaims.png" alt="Sample Spreadsheet 1"></li>
+<li>Claims to Set Up List
+<img src="Screenshots/SpreadsheetSample_ClaimsToSetup.png" alt="Sample Spreadsheet 2"></li>
+</ul>
+<h2 id="known-errors">Known errors</h2>
+<p><strong>Runtime error 1004 / &quot;file is open in another application&quot;</strong>
+A previous run didn't close Excel properly, leaving it running invisibly in the background with the file locked.
+→ Task Manager (<code>Ctrl+Shift+Esc</code>) → <strong>Details</strong> tab → end any <code>EXCEL.EXE</code> processes → re-run the macro.</p>
+<p><strong>Macros stop running after reopening Outlook</strong>
+Outlook's macro security resets each session by default.
+→ <strong>File → Options → Trust Center → Trust Center Settings → Macro Settings</strong> → select &quot;Notifications for all macros,&quot; then click <strong>Enable Content</strong> when prompted each time Outlook restarts.</p>
+<p><strong>A claim doesn't show up after running the macro</strong>
+Usually means it's already in the sheet (duplicate-check by Claim Number is working as intended) — check existing rows before assuming it failed.</p>
+
+</body>
+</html>
